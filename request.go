@@ -206,7 +206,7 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 		}
 
 		if u.Host != "" {
-			host = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+			host = fmt.Sprintf("%s://%s", u.Scheme, strings.Trim(u.Host, "/"))
 		}
 
 		for k, v := range u.Query() {
