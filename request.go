@@ -196,6 +196,7 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 	host := r.client.GetHost()
 	prefix := r.client.GetUrlPrefix()
 
+	queries := r.queries
 	path := ""
 	if r.path != "" {
 		path = strings.TrimPrefix(r.path, "/")
@@ -209,7 +210,9 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 		}
 
 		for k, v := range u.Query() {
-			r.queries.Add(k, fmt.Sprint(v))
+			for _, each := range v {
+				queries.Add(k, each)
+			}
 		}
 
 		path = fmt.Sprintf("/%s", u.Path)
@@ -217,13 +220,15 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 
 	if !r.skipDefaultQueries {
 		for k, v := range r.client.DefaultQueries() {
-			r.queries.Add(k, fmt.Sprint(v))
+			for _, each := range v {
+				queries.Add(k, each)
+			}
 		}
 	}
 
 	qp := ""
-	if len(r.queries) > 0 {
-		qp = fmt.Sprintf("?%s", r.queries.Encode())
+	if len(queries) > 0 {
+		qp = fmt.Sprintf("?%s", queries.Encode())
 	}
 
 	url := fmt.Sprintf("%s%s%s%s", host, prefix, path, qp)
@@ -238,20 +243,24 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 	}
 
 	if r.userAgent != nil {
-		req.Header.Set("User-Agent", *r.userAgent)
+		r.AddHeader("User-Agent", *r.userAgent)
 	} else if ua := r.client.GetUserAgent(); ua != "" {
-		req.Header.Set("User-Agent", *r.userAgent)
+		r.AddHeader("User-Agent", ua)
 	}
 
 	headers := r.headers
 	if !r.skipDefaultHeaders {
 		for k, v := range r.client.DefaultHeaders() {
-			headers.Add(k, fmt.Sprint(v))
+			for _, each := range v {
+				headers.Add(k, each)
+			}
 		}
 	}
 
 	for k, v := range headers {
-		req.Header.Add(k, fmt.Sprint(v))
+		for _, each := range v {
+			req.Header.Add(k, each)
+		}
 	}
 
 	timeout := r.client.GetTimeout()

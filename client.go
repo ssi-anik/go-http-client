@@ -107,7 +107,7 @@ func (c *httpClient) UserAgent(ua string) HttpClient {
 }
 
 func (c *httpClient) GetUserAgent() string {
-	return c.userAgent
+	return strings.TrimSpace(c.userAgent)
 }
 
 func (c *httpClient) WithDefaultHeaders(headers map[string][]string) HttpClient {
