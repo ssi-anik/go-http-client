@@ -72,11 +72,11 @@ func (r *httpResponse) GetHeader(key string) (string, bool) {
 
 func (r *httpResponse) IsJsonResponse() bool {
 	v, ok := r.GetHeader("content-type")
-	if !ok || v != "application/json" {
+	if !ok {
 		return false
 	}
 
-	return true
+	return strings.Contains(strings.ToLower(v), "application/json")
 }
 
 func (r *httpResponse) Content() []byte {
