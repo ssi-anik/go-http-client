@@ -24,6 +24,7 @@ type HttpRequest interface {
 	Queries(url.Values) HttpRequest
 	SkipDefaultQueries() HttpRequest
 	Body([]byte) HttpRequest
+	JsonBody([]byte) HttpRequest
 	Method(string) HttpRequest
 	Path(string) HttpRequest
 	Send(method string, path string, body []byte, headers http.Header) (HttpResponse, error)
@@ -48,6 +49,7 @@ type httpRequest struct {
 	queries            url.Values
 	skipDefaultQueries bool
 	body               []byte
+	isJsonBody         bool
 	skipDefaultHeaders bool
 	method             string
 	path               string
@@ -127,6 +129,13 @@ func (r *httpRequest) SkipDefaultQueries() HttpRequest {
 }
 
 func (r *httpRequest) Body(b []byte) HttpRequest {
+	r.body = b
+
+	return r
+}
+
+func (r *httpRequest) JsonBody(b []byte) HttpRequest {
+	r.isJsonBody = true
 	r.body = b
 
 	return r
@@ -275,6 +284,10 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 		for _, each := range v {
 			req.Header.Add(k, each)
 		}
+	}
+
+	if r.isJsonBody {
+		req.Header.Set("Content-Type", "application/json")
 	}
 
 	timeout := r.client.GetTimeout()
