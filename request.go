@@ -287,7 +287,7 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 	}
 
 	if r.isJsonBody {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Add("Content-Type", "application/json")
 	}
 
 	timeout := r.client.GetTimeout()
