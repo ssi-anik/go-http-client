@@ -238,7 +238,9 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 			}
 		}
 
-		path = fmt.Sprintf("/%s", strings.TrimPrefix(u.Path, "/"))
+		if u.Path != "" {
+			path = fmt.Sprintf("/%s", strings.TrimPrefix(u.Path, "/"))
+		}
 	}
 
 	if !r.skipDefaultQueries {
