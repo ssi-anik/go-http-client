@@ -209,15 +209,18 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 
 	queries := r.queries
 	path := ""
-	if r.path != "" {
-		path = strings.TrimPrefix(r.path, "/")
+	if path = r.path; path != "" {
 		u, err := url.Parse(path)
 		if err != nil {
 			return nil, err
 		}
 
 		if u.Host != "" {
-			host = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+			user := ""
+			if u.User != nil {
+				user = fmt.Sprintf("%s@", u.User.String())
+			}
+			host = fmt.Sprintf("%s://%s%s", u.Scheme, user, u.Host)
 		}
 
 		for k, v := range u.Query() {
@@ -226,7 +229,7 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 			}
 		}
 
-		path = fmt.Sprintf("/%s", u.Path)
+		path = fmt.Sprintf("/%s", strings.TrimPrefix(u.Path, "/"))
 	}
 
 	if !r.skipDefaultQueries {
