@@ -240,6 +240,8 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 
 		if u.Path != "" {
 			path = fmt.Sprintf("/%s", strings.TrimPrefix(u.Path, "/"))
+		} else {
+			path = ""
 		}
 	}
 
