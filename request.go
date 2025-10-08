@@ -3,6 +3,7 @@ package go_http_client
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 
 type HttpRequest interface {
 	WithContext(context.Context) HttpRequest
+	WithLogger(logger Logger) HttpRequest
 	UserAgent(ua string) HttpRequest
 	MaxRedirects(int) HttpRequest
 	NoRedirect() HttpRequest
@@ -33,10 +35,13 @@ type HttpRequest interface {
 	Submit() (HttpResponse, error)
 }
 
+type Logger func(msg string, args ...any)
+
 type httpRequest struct {
 	client             HttpClient
 	userAgent          *string
 	ctx                context.Context
+	logger             Logger
 	maxRedirects       *int
 	timeout            *time.Duration
 	headers            http.Header
@@ -50,6 +55,12 @@ type httpRequest struct {
 
 func (r *httpRequest) WithContext(ctx context.Context) HttpRequest {
 	r.ctx = ctx
+
+	return r
+}
+
+func (r *httpRequest) WithLogger(logger Logger) HttpRequest {
+	r.logger = logger
 
 	return r
 }
@@ -285,6 +296,26 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 
 			return nil
 		},
+	}
+
+	if r.logger != nil {
+		loggable := map[string]interface{}{
+			"method":        req.Method,
+			"host":          host,
+			"prefix":        prefix,
+			"path":          path,
+			"url":           url,
+			"queries":       queries.Encode(),
+			"body":          string(r.body),
+			"headers":       headers,
+			"timeout":       timeout,
+			"max_redirects": maxRedirects,
+			"has_context":   req.Context != nil,
+		}
+
+		if loggableBytes, err := json.Marshal(loggable); err == nil {
+			r.logger(string(loggableBytes))
+		}
 	}
 
 	response, err := client.Do(req)
