@@ -280,14 +280,17 @@ func (r *httpRequest) Submit() (HttpResponse, error) {
 		}
 	}
 
+	// even if the default is something else
+	// will overwrite here
+	// because of the request is intended to be application/json
+	if r.isJsonBody {
+		headers.Add("Content-Type", "application/json")
+	}
+
 	for k, v := range headers {
 		for _, each := range v {
 			req.Header.Add(k, each)
 		}
-	}
-
-	if r.isJsonBody {
-		req.Header.Add("Content-Type", "application/json")
 	}
 
 	timeout := r.client.GetTimeout()
